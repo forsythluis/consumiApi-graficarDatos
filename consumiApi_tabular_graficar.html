@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Consumo _Api Covid</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/jquery-3.5.1.min.js" ></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@3.3.0/dist/chart.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/jquery.dataTables.min.css">
+	<script type="text/javascript" src="js/jquery.dataTables.min.js" ></script>
+	<script type="text/javascript" src="js/highcharts.js"></script>
+					
+
+	
+</head>
+<body>
+
+	<div id="container" class="container">
+
+		<div class="section">	
+
+			<button id="Datos" class="btn btn-success mt-4" onclick="buscar()" >Buscar Datos</button>
+			<button id="button" class="btn btn-info mt-4">Graficar Datos</button>
+
+			
+		</div>
+	</div>
+
+	
+
+	<!-- <div id="contenedor" class="container">
+		
+		<div class="section"> -->
+			<!-- <ul id="informacion"></ul> -->
+
+	 <table id="example" class="display" style="width:100%">
+
+		<thead>
+				    <tr>
+				      <th scope="col">Fecha</th>
+				      <th scope="col">Casos Acumulados</th>
+				      <th scope="col">Recuperados</th>
+				      <th scope="col">Muertos</th>
+				      <th scope="col">Activos</th>
+				      
+				    </tr>
+				  </thead>
+        
+     </table>
+
+	<!-- 	</div>
+	</div> -->
+
+	<div id="chart-container">
+		<canvas id="graphCanvas"></canvas>
+		
+	</div> 
+
+	<!-- <div id="grafico"></div> -->
+
+	<!-- <div id="plotlyChart"></div> -->
+
+
+
+	<script type="text/javascript">
+
+		
+		
+	function buscar () {
+		// body... 
+		// 
+		
+		var datos;
+		var resultado;
+		var valores
+		
+		let url = "https://covid19.patria.org.ve/api/v1/timeline";
+
+
+		const api = new XMLHttpRequest();
+		api.open("GET", url, true);
+		api.send();
+
+		api.onreadystatechange = function(){
+
+			if(this.status == 200 && this.readyState == 4){
+
+				 datos = JSON.parse(this.responseText);
+
+				console.log(datos);
+
+				//resultado = document.querySelector("#informacion");
+
+				//resultado.innerHTML = '';
+
+			    //valores = Object.values(datos);
+
+			    //console.log(valores);
+			   
+			    var activototal = [];
+			    var fechas = [];
+			    var recuperado = [];
+			    var fallecer = [];
+			    var activos = [];
+
+
+				 for(var i = 0; i < datos.length; i++){
+
+				// 	//console.log(item);
+
+				// 	resultado.innerHTML += `<tr>
+				// 							      <th scope="row">${item.Date} </th>
+				// 							      <td>${item.Active.Count}</td>
+				// 							      <td>${item.Recovered.Count}</td>
+				// 							      <td>${item.Deaths.Count}</td>
+											      
+				// 							   </tr>`;	
+				// 							   
+					fechas.push(datos[i].Date);//pruebafechas	
+				    activototal.push( datos[i].Confirmed.Count);
+				    recuperado.push(datos[i].Recovered.Count);
+				    fallecer.push(datos[i].Deaths.Count);
+				    activos.push(datos[i].Active.Count);  					   								   
+
+				 }
+
+				 console.log("catidad de casos"+activototal);
+				 console.log("fechas"+fechas);
+
+
+				$(document).ready(function() {
+				    $('#example').DataTable( {
+				         data: datos,
+				         columns: [
+				         		{data: 'Date'},
+				         		{data: 'Active.Count'},
+				         		{data: 'Recovered.Count'},
+				         		{data: 'Deaths.Count'},
+				         		{data: 'Confirmed.Count'},
+
+				         ] 
+				    });
+
+				    $('button').click(function(){
+				    	 muestraGrafico();
+				    });
+				    
+				});
+
+
+
+				 function muestraGrafico(){
+
+				 	var chartdata = {
+				 		labels: fechas,
+				 		datasets:[
+				 		{
+				 			label: "Casos Acumulados",
+				 			backgroundColor: "#49e2ff",
+				 			borderColor: "#46d5f1",
+				 			hoverBackgroundColor: "#cccccc",
+				 			hoverBorderColor: "#666666",
+				 			data: activototal
+				 		},
+				 		{
+				 			label: "Recuperados Acumulados",
+				 			backgroundColor: "#b43bc4",
+				 			borderColor: "#800e8f",
+				 			hoverBackgroundColor: "#cccccc",
+				 			hoverBorderColor: "#666666",
+				 			data: recuperado		
+				 		},
+				 		{				 		
+				 			label: "Fallecidos Acumulados",
+				 			backgroundColor: "#0e8f33",
+				 			borderColor: "#14b842",
+				 			hoverBackgroundColor: "#cccccc",
+				 			hoverBorderColor: "#666666",
+				 			data: fallecer		
+				 		},
+				 		{
+				 			label: "Casos Activos",
+				 			backgroundColor: "#F2552C",
+				 			borderColor: "#e8590c",
+				 			hoverBackgroundColor: "#cccccc",
+				 			hoverBorderColor: "#666666",
+				 			data: activos
+				 		}
+				 		]
+				 	}
+				 	var graphTarget = $("#graphCanvas");
+
+					var barGraph= new Chart(graphTarget,{
+					 	type: "line",
+					 	data: chartdata,
+					 	options:{
+					 		plugins:{
+					 		    title:{
+					 			  display: true,
+					 			  text: "Covid en Venezuela",
+					 			  font:{
+					 			  	size:20
+					 			  }
+					 		    }
+					 	    }
+					 	}
+					 	
+				    });
+				 };	 
+			}
+		}
+	}
+	</script>
+	
+</body>
+</html>
